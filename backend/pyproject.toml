@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "manz"
+version = "0.1.0"
+description = "A simple meal planner"
+authors = ["Antony Gandonou migan <gmigan.a@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.1.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
