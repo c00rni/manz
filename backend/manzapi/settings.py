@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'manz.apps.ManzConfig',
 ]
 
@@ -71,6 +72,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'manzapi.wsgi.application'
 
+AUTHENTICATION_BACKENDS = [
+    'manz.backend.EmailAuthenticationBackend',  # Custom email-based backend
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
