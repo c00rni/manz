@@ -53,7 +53,7 @@ class EmailAuthTokenView(APIView):
 
         return Response(
             {'error': 'Invalid email or password.'},
-            status=status.HTTP_400_BAD_REQUEST,
+            status=status.HTTP_403_FORBIDDEN,
         )
 
 
