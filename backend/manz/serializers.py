@@ -1,9 +1,12 @@
 from .models import Recipe, Item, RecipeItem
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.core.validators import validate_email
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.EmailField(required=True, allow_blank=False)
     password1 = serializers.CharField(write_only=True, min_length=8, style={
                                       'input_type': 'password'})
     password2 = serializers.CharField(write_only=True, min_length=8, style={
@@ -13,15 +16,26 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'email', 'password1', 'password2']
 
+    def validate_email(self, email):
+        if not email:
+            raise serializers.ValidationError("This field is required.")
+        try:
+            validate_email(email)
+        except serializers.ValidationError:
+            raise serializers.ValidationError("Enter a valid email address.")
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError(
+                "This email is already taken.")
+
+        return email
+
     def validate(self, data):
-        # Check if passwords match
         if data['password1'] != data['password2']:
             raise serializers.ValidationError(
                 {"password": "Passwords do not match."})
         return data
 
     def create(self, validated_data):
-        # Create the user
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],

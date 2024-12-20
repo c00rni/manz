@@ -18,13 +18,15 @@ class UserRegistrationView(APIView):
 
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
+        messages = ["User registered successfully"]
+        response_code = status.HTTP_201_CREATED
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {"message": "User registered successfully"},
-                status=status.HTTP_201_CREATED
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            messages = [error.title()
+                        for error in serializer.errors]
+            response_code = status.HTTP_400_BAD_REQUEST
+        return Response({"message": messages}, status=response_code)
 
 
 class EmailAuthTokenView(APIView):
