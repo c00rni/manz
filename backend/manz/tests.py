@@ -3,6 +3,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from rest_framework import status
 from django.contrib.auth.models import User
+from .models import Recipe, Item  # , RecipeItem
 from rest_framework.authtoken.models import Token
 
 
@@ -97,24 +98,29 @@ class AuthentificationView(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class RecipeCreateViewTest(TestCase):
+class RecipeCreateView(TestCase):
+
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser", password="testpassword")
         self.token = Token.objects.create(user=self.user)
         self.create_recipe_url = reverse('manz:api-recipe')
 
+        self.recipe_title = "Chocolate Cake"
+        self.first_item_name = "Flour"
+        self.first_item_quantity_type = "cups"
+        self.first_item_quantity = 2
         self.recipe_data = {
-            "title": "Chocolate Cake",
+            "title": f"{self.recipe_title}",
             "description": "A delicious chocolate cake recipe.",
             "recipe_items": [
                 {
                     "item": {
-                        "name": "Flour",
+                        "name": f"{self.first_item_name}",
                         "image_url": "http://example.com/flour.jpg",
-                        "quantity_type": "cups"
+                        "quantity_type": f"{self.first_item_quantity_type}"
                     },
-                    "quantity": 2
+                    "quantity": self.first_item_quantity
                 },
                 {
                     "item": {
@@ -126,56 +132,76 @@ class RecipeCreateViewTest(TestCase):
             ]
         }
 
-    def test_should_create_recipe_for_an_authenticated(self):
-        # Initialize Django's Client manually
+    def test_should_create_recipe_for_an_authenticated_user(self):
+        # Initialize Django's Client manually to send a token with the request
         client = Client()
-
-        # Set up the Authorization header manually with the token
         headers = {
             'HTTP_AUTHORIZATION': f'Token {self.token.key}',
         }
 
-        # Perform a POST request with the headers and data
-        response = client.post(
+        client.post(
             self.create_recipe_url,
-            # Explicitly serialize the data to JSON
             data=json.dumps(self.recipe_data),
-            content_type='application/json',  # Set content type to JSON
-            **headers,  # Pass headers for authentication
+            content_type='application/json',
+            **headers,
         )
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        reciepe = Recipe.objects.filter(title=self.recipe_title).first()
+        self.assertIsNotNone(reciepe)
 
+    def test_should_not_authorized_recipe_creation_without_token(self):
+        response = self.client.post(self.create_recipe_url, self.recipe_data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-"""
-class RecipeViewTest(TestCase):
-
-    def setUp(self):
-        self.user = User.objects.create_user(
-            username='testuser',
-            password='testpassword',
-            email='test@example.com',
-        )
-        self.token = Token.objects.create(user=self.user)
-        self.auth_headers = {
-            'HTTP_AUTHORIZATION': f'Bearer {self.token.key}'
+    def test_should_not_create_recipe_without_title(self):
+        self.recipe_data = {
+            "title": "",
+            "description": "A delicious chocolate cake recipe.",
+            "recipe_items": [
+                {
+                    "item": {
+                        "name": "Flour",
+                        "image_url": "http://example.com/flour.jpg",
+                        "quantity_type": "cups"
+                    },
+                    "quantity": 2
+                },
+            ]
         }
-        self.recipe_item_url = reverse('manz:api-recipe')
-        self.valid_data = {
-            "name": "Sugar",
-            "quantity": 1.5,
-            "quantity_type": "kg",
-            "description": "Granulated sugar",
-            "image_url": ""
+        response = self.client.post(self.create_recipe_url, self.recipe_data)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+
+    def test_should_not_create_recipe_without_items(self):
+        self.recipe_data = {
+            "title": "Chocolate Cake",
+            "description": "A delicious chocolate cake recipe.",
+            "recipe_items": []
+        }
+        response = self.client.post(self.create_recipe_url, self.recipe_data)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+
+    def test_should_create_all_recipe_items(self):
+        # Initialize Django's Client manually to send a token with the request
+        client = Client()
+        headers = {
+            'HTTP_AUTHORIZATION': f'Token {self.token.key}',
         }
 
-    def test_should_not_create_item_without_auth_token(self):
-
-        response = self.client.post(
-            self.recipe_item_url,
-            self.valid_data,
-            **self.auth_headers
+        client.post(
+            self.create_recipe_url,
+            data=json.dumps(self.recipe_data),
+            content_type='application/json',
+            **headers,
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    # def test_should_not_
-"""
+
+        items = Item.objects.filter().all()
+        self.assertEqual(len(items), 2)
+
+    # def test_should_find_the_quantity_of_a_item_associate_to_a_reciepe(self):
+    #   self.assertIsNotNone(None)
