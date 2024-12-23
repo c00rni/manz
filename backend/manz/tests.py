@@ -5,6 +5,7 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from .models import Recipe, Item, Meal  # , RecipeItem
 from rest_framework.authtoken.models import Token
+from datetime import datetime, timedelta
 
 
 class RegistrationView(TestCase):
@@ -225,10 +226,14 @@ class ScheduleMealView(TestCase):
 
         self.create_meal_url = reverse('manz:api-meal')
 
+        now = datetime.utcnow()
+        one_hour_later_from_now = now + timedelta(hours=1)
         self.recipe_data = {
             "recipe_id": self.recipe.id,
-            "start_date": "2024-12-25T12:00:00Z",
-            "end_date": "2024-12-25T14:00:00Z"
+            "start_date": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "end_date": one_hour_later_from_now.strftime(
+                "%Y-%m-%dT%H:%M:%SZ"
+            ),
         }
 
     def test_should_schedule_a_meal(self):
@@ -247,10 +252,14 @@ class ScheduleMealView(TestCase):
         meal = Meal.objects.filter(user=self.user).first()
         self.assertIsNotNone(meal)
 
-    """
-    def test_should_the_authenticated_user_meals(self):
-        pass
+    def test_should_not_create_meals_for_unauthenticated_user(self):
+        response = self.client.post(self.create_meal_url, self.recipe_data)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
 
+    """
     def test_should_only_get_meals_schedule_for_the_next_hour(self):
         pass
 
