@@ -1,4 +1,4 @@
-from .models import Recipe, Item, RecipeItem
+from .models import Recipe, Item, RecipeItem, Meal
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
@@ -66,9 +66,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'recipe_items']
 
     def create(self, validated_data):
-        # Extract recipe items data
         recipe_items_data = validated_data.pop('recipe_items')
-        # Attach the user from context
         user = self.context['request'].user
         recipe = Recipe.objects.create(user=user, **validated_data)
 
@@ -86,3 +84,41 @@ class RecipeSerializer(serializers.ModelSerializer):
             )
 
         return recipe
+
+
+class MealSerializer(serializers.ModelSerializer):
+    recipe_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Meal
+        fields = [
+            'id',
+            'user',
+            'start_date',
+            'end_date',
+            'recipe_id',
+        ]
+
+    def validate(self, data):
+        user = self.context['request'].user
+        recipe = Recipe.objects.filter(user=user, id=data['recipe_id']).first()
+        if data['start_date'] >= data['end_date']:
+            raise serializers.ValidationError(
+                "Start date must be earlier than end date.")
+
+        if not recipe:
+            raise serializers.ValidationError(
+                "The selected recipe does not belong to the user.")
+
+        return data
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        recipe = Recipe.objects.filter(id=validated_data['recipe_id']).first()
+        meal = Meal.objects.create(
+            user=user,
+            recipe=recipe,
+            start_date=validated_data['start_date'],
+            end_date=validated_data['end_date']
+        )
+        return meal

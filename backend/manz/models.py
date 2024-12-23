@@ -42,3 +42,21 @@ class RecipeItem(models.Model):
 
     def __str__(self):
         return f"{self.item.name} - {self.quantity} {self.quantity_type or ''} for {self.recipe.title}"
+
+
+class Meal(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="meals"
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name="meals"
+    )  # Associate the Meal with one Recipe
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+
+    def __str__(self):
+        return f"Meal: {self.recipe.title} from {self.start_date} to {self.end_date}"

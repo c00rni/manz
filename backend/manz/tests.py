@@ -3,7 +3,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import Recipe, Item  # , RecipeItem
+from .models import Recipe, Item, Meal  # , RecipeItem
 from rest_framework.authtoken.models import Token
 
 
@@ -205,3 +205,61 @@ class RecipeCreateView(TestCase):
 
     # def test_should_find_the_quantity_of_a_item_associate_to_a_reciepe(self):
     #   self.assertIsNotNone(None)
+
+
+class ScheduleMealView(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser",
+            password="testpassword",
+            email="test@example.com"
+        )
+        self.token = Token.objects.create(user=self.user)
+
+        self.recipe = Recipe.objects.create(
+            title="Chocolate Cake",
+            description="A delicious chocolate cake recipe.",
+            user=self.user
+        )
+
+        self.create_meal_url = reverse('manz:api-meal')
+
+        self.recipe_data = {
+            "recipe_id": self.recipe.id,
+            "start_date": "2024-12-25T12:00:00Z",
+            "end_date": "2024-12-25T14:00:00Z"
+        }
+
+    def test_should_schedule_a_meal(self):
+        # Initialize Django's Client manually to send a token with the request
+        client = Client()
+        headers = {
+            'HTTP_AUTHORIZATION': f'Token {self.token.key}',
+        }
+
+        client.post(
+            self.create_meal_url,
+            data=json.dumps(self.recipe_data),
+            content_type='application/json',
+            **headers,
+        )
+        meal = Meal.objects.filter(user=self.user).first()
+        self.assertIsNotNone(meal)
+
+    """
+    def test_should_the_authenticated_user_meals(self):
+        pass
+
+    def test_should_only_get_meals_schedule_for_the_next_hour(self):
+        pass
+
+    def test_should_not_get_meals_not_own_by_the_authenticated_user(self):
+        pass
+
+    def test_should_not_schedule_a_meal_without_recipe(self):
+        pass
+
+    def test_should_not_schedule_a_meal_with_a_recipe_unauthorized_to_access(self):
+        pass
+    """

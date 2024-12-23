@@ -6,7 +6,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .serializers import RecipeSerializer
+from .serializers import RecipeSerializer, MealSerializer
 
 
 class UserRegistrationView(APIView):
@@ -68,6 +68,27 @@ class RecipeCreateView(APIView):
         request.data['user'] = request.user.id
 
         serializer = RecipeSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ScheduleMealView(APIView):
+    """
+    API View to handle meals.
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        request.data['user'] = request.user.id
+
+        serializer = MealSerializer(
             data=request.data,
             context={'request': request}
         )
