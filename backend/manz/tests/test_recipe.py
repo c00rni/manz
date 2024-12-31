@@ -3,100 +3,10 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from rest_framework import status
 from django.contrib.auth.models import User
-from .models import Recipe, Item, Meal  # , RecipeItem
+from manz.models import Recipe, Item, Meal  # , RecipeItem
 from rest_framework.authtoken.models import Token
 from datetime import datetime, timedelta
-
-
-class RegistrationView(TestCase):
-
-    def setUp(self):
-        self.register_url = reverse('manz:api-register')
-        self.user_input_data = {
-            'username': 'testuser',
-            'email': 'test@example.com',
-            'password1': 'strongpassword123',
-            'password2': 'strongpassword123',
-        }
-
-    def test_should_register_unknown_email(self):
-        self.client.post(self.register_url, self.user_input_data)
-        user = User.objects.filter(email=self.user_input_data['email']).first()
-        self.assertIsNotNone(user)
-
-    def test_should_not_register_multiple_users_with_the_same_username(self):
-        User.objects.create_user(
-            username="testuser",
-            password="testpassword",
-            email='test@example.com'
-        )
-        self.client.post(self.register_url, self.user_input_data)
-        users = User.objects.filter(email=self.user_input_data['email']).all()
-        self.assertEqual(len(users), 1)
-
-    def test_should_not_register_user_with_unvalide_email(self):
-        self.user_input_data = {
-            'username': 'testuser',
-            'email': 'not-a-email',
-            'password1': 'strongpassword123',
-            'password2': 'strongpassword123',
-        }
-        self.client.post(self.register_url, self.user_input_data)
-        user = User.objects.filter(email=self.user_input_data['email']).first()
-        self.assertIsNone(user)
-
-    def test_should_not_register_user_without_email(self):
-        self.user_input_data = {
-            'username': 'testuser',
-            'password1': 'strongpassword123',
-            'password2': 'strongpassword123',
-        }
-        self.client.post(self.register_url, self.user_input_data)
-        user = User.objects.filter(
-            username=self.user_input_data['username']).first()
-        self.assertIsNone(user)
-
-
-class AuthentificationView(TestCase):
-
-    def setUp(self):
-        self.login_url = reverse('manz:api-authentification')
-        self.user = User.objects.create_user(
-            username='testuser',
-            password='testpassword',
-            email='test@example.com'
-        )
-        self.user_input_data = {
-            'password': 'testpassword',
-            'email': 'test@example.com'
-        }
-
-    def test_should_give_a_token_for_valid_credentials(self):
-        response = self.client.post(self.login_url, self.user_input_data)
-        self.assertIn('token', response.data)
-
-    def test_should_not_give_token_for_non_valid_credentials(self):
-        self.user_input_data = {
-            'password': 'testpassword',
-            'email': 'non-existing-user@example.com'
-        }
-        response = self.client.post(self.login_url, self.user_input_data)
-        self.assertNotIn('token', response.data)
-
-    def test_should_return_a_unauthoried_status_code_for_non_valid_credentials(self):
-        self.user_input_data = {
-            'password': 'testpassword',
-            'email': 'non-existing-user@example.com'
-        }
-        response = self.client.post(self.login_url, self.user_input_data)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_should_return_a_unauthoried_token_for_non_valid_credentials(self):
-        self.user_input_data = {
-            'password': 'testpassword',
-        }
-        response = self.client.post(self.login_url, self.user_input_data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+from unittest import skip
 
 
 class RecipeCreateView(TestCase):
@@ -225,13 +135,14 @@ class ScheduleMealView(TestCase):
         )
 
         self.create_meal_url = reverse('manz:api-meal')
+        self.one_day_time = timedelta(days=1)
 
-        now = datetime.utcnow()
-        one_hour_later_from_now = now + timedelta(hours=1)
+        self.now = datetime.utcnow()
+        self.one_hour_later_from_now = self.now + timedelta(hours=1)
         self.recipe_data = {
             "recipe_id": self.recipe.id,
-            "start_date": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "end_date": one_hour_later_from_now.strftime(
+            "start_date": self.now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "end_date": self.one_hour_later_from_now.strftime(
                 "%Y-%m-%dT%H:%M:%SZ"
             ),
         }
@@ -259,16 +170,61 @@ class ScheduleMealView(TestCase):
             status.HTTP_401_UNAUTHORIZED,
         )
 
-    """
-    def test_should_only_get_meals_schedule_for_the_next_hour(self):
-        pass
+    @skip("Not implemented")
+    def test_should_only_get_meals_schedule_for_the_(self):
+        client = Client()
+        headers = {
+            'HTTP_AUTHORIZATION': f'Token {self.token.key}',
+        }
 
+        # Create a meal in th next hour
+        client.post(
+            self.create_meal_url,
+            data=json.dumps(self.recipe_data),
+            content_type='application/json',
+            **headers,
+        )
+        cake_recipe = Recipe.objects.create(
+            title="Chocolate Cake",
+            description="A delicious chocolate cake recipe.",
+            user=self.user
+        )
+
+        soup_recipe = Recipe.objects.create(
+            title="Onion soup",
+            description="A delicious chocolate cake recipe.",
+            user=self.user
+        )
+
+        today_meal = Meal.objects.create(
+            user=self.user,
+            recipe=cake_recipe,
+            start_date=self.now,
+            end_date=self.one_hour_later_from_now,
+        ).first()
+
+        tomorrow_meal = Meal.objects.create(
+            user=self.user,
+            recipe=soup_recipe,
+            start_date=self.now + self.one_day_time,
+            end_date=self.one_hour_later_from_now + self.one_day_time,
+        ).first()
+
+        client.get(
+            self.create_meal_url,
+            data=json.dumps(self.recipe_data),
+            content_type='application/json',
+            **headers,
+        )
+
+    @skip("Not implemented")
     def test_should_not_get_meals_not_own_by_the_authenticated_user(self):
         pass
 
+    @skip("Not implemented")
     def test_should_not_schedule_a_meal_without_recipe(self):
         pass
 
+    @skip("Not implemented")
     def test_should_not_schedule_a_meal_with_a_recipe_unauthorized_to_access(self):
         pass
-    """
