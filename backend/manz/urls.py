@@ -4,7 +4,6 @@ from .views import (
     EmailAuthTokenView,
     RecipeCreateView,
     ScheduleMealView,
-    MealView,
     ItemView,
 )
 
@@ -14,6 +13,5 @@ urlpatterns = [
     path('login/', EmailAuthTokenView.as_view(), name='api-authentification'),
     path('recipe/', RecipeCreateView.as_view(), name='api-recipe'),
     path('schedule/', ScheduleMealView.as_view(), name='api-schedule'),
-    path('meal/', MealView.as_view(), name='api-meal'),
     path('item/', ItemView.as_view(), name='api-item'),
 ]

@@ -87,7 +87,7 @@ class RecipeCreateView(APIView):
 
 class ScheduleMealView(APIView):
     """
-    API View to handle meals.
+    API View to schedule meals.
     """
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -104,11 +104,6 @@ class ScheduleMealView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class MealView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
@@ -143,6 +138,9 @@ class MealView(APIView):
 
 
 class ItemView(APIView):
+    """
+    API View to handle Items
+    """
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 

@@ -95,7 +95,7 @@ class ListScheduleMeal(TestCase):
         self.str_start_date = self.start_date.strftime('%Y-%m-%dT%H:%M:%SZ')
         self.end_date = self.start_date + timedelta(hours=3)
         self.str_end_date = self.end_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-        self.meal_url = reverse('manz:api-meal')
+        self.meal_url = reverse('manz:api-schedule')
 
     def test_should_list_meal_started_in_the_time_frame(self):
         client = Client()
