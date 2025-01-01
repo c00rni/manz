@@ -1,12 +1,18 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import UserRegistrationSerializer
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .serializers import RecipeSerializer, MealSerializer
+from .serializers import (
+    RecipeSerializer,
+    MealSerializer,
+    UserRegistrationSerializer
+)
+from .models import Meal
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import make_aware
 
 
 class UserRegistrationView(APIView):
@@ -97,3 +103,39 @@ class ScheduleMealView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MealView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        start_date_param = request.query_params.get('start_date')
+        end_date_param = request.query_params.get('end_date')
+
+        if not start_date_param or not end_date_param:
+            return Response(
+                {"error": "Both 'start_date' and 'end_date' query parameters are required."},
+                status=400
+            )
+
+        try:
+            start_date = parse_datetime(start_date_param)
+            end_date = parse_datetime(end_date_param)
+        except (ValueError, TypeError):
+            return Response(
+                {"error": "Invalid date format. Use ISO 8601 format (e.g., '2025-01-01T00:00:00Z')."},
+                status=400
+            )
+
+        meals = Meal.objects.filter(
+            user=user,
+            start_date__gte=start_date,
+            start_date__lt=end_date
+        )
+
+        serializer = MealSerializer(meals, many=True)
+
+        return Response(serializer.data)
