@@ -5,6 +5,7 @@ from .views import (
     RecipeCreateView,
     ScheduleMealView,
     MealView,
+    ItemView,
 )
 
 app_name = "manz"
@@ -14,4 +15,5 @@ urlpatterns = [
     path('recipe/', RecipeCreateView.as_view(), name='api-recipe'),
     path('schedule/', ScheduleMealView.as_view(), name='api-schedule'),
     path('meal/', MealView.as_view(), name='api-meal'),
+    path('item/', ItemView.as_view(), name='api-item'),
 ]

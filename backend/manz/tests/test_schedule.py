@@ -7,7 +7,6 @@ from manz.models import Recipe, Meal  # , RecipeItem
 from rest_framework.authtoken.models import Token
 from django.utils.timezone import make_aware
 from datetime import datetime, timedelta
-from unittest import skip
 
 
 class ScheduleMealView(TestCase):

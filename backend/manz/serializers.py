@@ -2,6 +2,7 @@ from .models import Recipe, Item, RecipeItem, Meal
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.core.validators import validate_email
+from django.utils.timezone import now
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -122,3 +123,37 @@ class MealSerializer(serializers.ModelSerializer):
             end_date=validated_data['end_date']
         )
         return meal
+
+
+class UserRecipeItemSerializer(serializers.ModelSerializer):
+    recipe_title = serializers.CharField(source="recipe.title")
+    item_name = serializers.CharField(source="item.name")
+    quantity = serializers.FloatField()
+    quantity_type = serializers.CharField(source="item.quantity_type")
+
+    class Meta:
+        model = RecipeItem
+        fields = ["recipe_title", "item_name", "quantity", "quantity_type"]
+
+
+class FetchUserRecipeItemsSerializer(serializers.Serializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    end_date = serializers.DateTimeField()
+
+    def validate_end_date(self, value):
+        if value <= now():
+            raise serializers.ValidationError(
+                "End date must be in the future.")
+        return value
+
+    def get_user_recipe_items(self):
+        user = self.context['request'].user
+        end_date = self.validated_data.get("end_date")
+
+        # Filter meals belonging to the user, ending before the specified date
+        meals = Meal.objects.filter(user=user, start_date__lte=end_date)
+        recipe_ids = meals.values_list("recipe_id", flat=True)
+
+        # Fetch all RecipeItems belonging to the user's recipes
+        recipe_items = RecipeItem.objects.filter(recipe_id__in=recipe_ids)
+        return UserRecipeItemSerializer(recipe_items, many=True).data

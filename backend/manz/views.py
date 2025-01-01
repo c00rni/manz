@@ -12,7 +12,8 @@ from .serializers import (
 )
 from .models import Meal
 from django.utils.dateparse import parse_datetime
-from django.utils.timezone import make_aware
+from django.http import JsonResponse
+from .serializers import FetchUserRecipeItemsSerializer
 
 
 class UserRegistrationView(APIView):
@@ -139,3 +140,37 @@ class MealView(APIView):
         serializer = MealSerializer(meals, many=True)
 
         return Response(serializer.data)
+
+
+class ItemView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        end_date_param = request.query_params.get('end_date')
+
+        if not end_date_param:
+            return JsonResponse(
+                {"error": "'end_date' query parameters are required."}
+            )
+
+        try:
+            end_date = parse_datetime(end_date_param)
+        except (ValueError, TypeError):
+            return JsonResponse(
+                {"error": "Invalid date format. Use ISO 8601 format (e.g., '2025-01-01T00:00:00Z')."},
+                status=400
+            )
+        serializer = FetchUserRecipeItemsSerializer(
+            data={
+                "user": request.user,
+                "end_date": end_date
+            },
+            context={'request': request}
+        )
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        recipe_items = serializer.get_user_recipe_items()
+        return JsonResponse(recipe_items, safe=False, status=200)
