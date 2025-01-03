@@ -12,7 +12,8 @@ class RecipeCreateView(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            username="testuser", password="testpassword")
+            username="testuser", password="testpassword"
+        )
         self.token = Token.objects.create(user=self.user)
         self.create_recipe_url = reverse('manz:api-recipe')
 

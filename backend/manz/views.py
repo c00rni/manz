@@ -10,7 +10,7 @@ from .serializers import (
     MealSerializer,
     UserRegistrationSerializer
 )
-from .models import Meal
+from .models import Meal, Recipe
 from django.utils.dateparse import parse_datetime
 from django.http import JsonResponse
 from .serializers import FetchUserRecipeItemsSerializer
@@ -83,6 +83,17 @@ class RecipeCreateView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        request.data['user'] = request.user.id
+
+        recipes = Recipe.objects.filter(
+            user=request.user,
+        )
+
+        serializer = RecipeSerializer(recipes, many=True)
+
+        return Response(serializer.data)
 
 
 class ScheduleMealView(APIView):
