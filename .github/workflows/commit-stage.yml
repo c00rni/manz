@@ -44,7 +44,7 @@ jobs:
 
     - name: Execute unit test
       working-directory: ./backend
-      run: poetry run python manage.py testww
+      run: poetry run python manage.py testwwaa
 
 #    - name: Analyse Python code for security issues
 #      working-directory: ./backend
