@@ -11,6 +11,10 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      SECRET_KEY: secret_key_for_tests
+      DATABASE_URL: django.db.backends.sqlite3:///db.sqlite3
+
     steps:
     - uses: actions/checkout@v4
 
@@ -40,7 +44,7 @@ jobs:
 
     - name: Analyse Python code for security issues
       working-directory: ./backend
-      run: poetry run bandit -ll -r ./backend
+      run: poetry run bandit -ll -r .
 
     - name: Test with pytest
       working-directory: ./backend
