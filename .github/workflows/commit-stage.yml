@@ -42,9 +42,9 @@ jobs:
       working-directory: ./backend
       run: poetry run ruff check --fix
 
-    - name: Execute unit test
+    - name: Execute unit tests
       working-directory: ./backend
-      run: poetry run python manage.py testwwaa
+      run: poetry run python manage.py test
 
 #    - name: Analyse Python code for security issues
 #      working-directory: ./backend

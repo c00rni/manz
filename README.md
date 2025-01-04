@@ -2,6 +2,8 @@
 
 ## Local dev
 
+Enable pre-commit test for the repo `git config --local core.hooksPath .githooks/hooks`.
+
 ### Frontend
 
 ```bash

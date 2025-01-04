@@ -1,0 +1,30 @@
+#!/bin/sh
+#
+# Git pre-commit hook script to run Django tests before committing.
+#
+# This script navigates to the `backend` directory and runs the tests
+# using the command `poetry run python manage.py test`. If the tests fail,
+# the commit is aborted.
+
+# Redirect output to stderr.
+exec 1>&2
+
+# Navigate to the `backend` directory
+echo "Navigating to the 'backend' directory..."
+cd backend || {
+    echo "Error: Unable to find or navigate to the 'backend' directory. Aborting commit."
+    exit 1
+}
+
+# Run tests using `poetry`
+echo "Running Django tests..."
+if ! poetry run python manage.py test; then
+    echo "Tests failed. Aborting commit."
+    exit 1
+fi
+
+# Return to the repository root after tests pass
+cd - >/dev/null || exit
+
+echo "All tests passed. Proceeding with commit."
+
