@@ -28,12 +28,12 @@ Users can register recipes, schedule meal base on the their recipe and List item
 over a period of time.
 
 Build a delivery pipeline:
-1. Build a working skeleton
-2. Create a commit stage the automate tests with github action
-3. Build and save an artefact of the code on dockerhub
-4. Deploy on a test environment 
-5. Have acceptance test executed on a test environment
-6. Release the app into production
+- [x] Build a working skeleton
+- [x] Create a commit stage the automate tests with github action
+- [ ] Build and save an artefact of the code on dockerhub
+- [ ] Deploy on a test environment 
+- [ ] Have acceptance test executed on a test environment
+- [ ] Release the app into production
 
 ### Questions
 
