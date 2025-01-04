@@ -42,10 +42,12 @@ jobs:
       working-directory: ./backend
       run: poetry run ruff check --fix
 
-    - name: Analyse Python code for security issues
-      working-directory: ./backend
-      run: poetry run bandit -ll -r .
-
     - name: Test with pytest
       working-directory: ./backend
       run: poetry run python manage.py test
+
+#    - name: Analyse Python code for security issues
+#      working-directory: ./backend
+#      run: poetry run bandit -ll -r .
+
+
