@@ -8,14 +8,16 @@ from django.utils.timezone import now
 class UserRegistrationSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=False, allow_blank=True)
     email = serializers.EmailField(required=True, allow_blank=False)
-    password1 = serializers.CharField(write_only=True, min_length=8, style={
-                                      'input_type': 'password'})
-    password2 = serializers.CharField(write_only=True, min_length=8, style={
-                                      'input_type': 'password'})
+    password1 = serializers.CharField(
+        write_only=True, min_length=8, style={"input_type": "password"}
+    )
+    password2 = serializers.CharField(
+        write_only=True, min_length=8, style={"input_type": "password"}
+    )
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ["username", "email", "password1", "password2"]
 
     def validate_email(self, email):
         if not email:
@@ -25,22 +27,20 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         except serializers.ValidationError:
             raise serializers.ValidationError("Enter a valid email address.")
         if User.objects.filter(email=email).exists():
-            raise serializers.ValidationError(
-                "This email is already taken.")
+            raise serializers.ValidationError("This email is already taken.")
 
         return email
 
     def validate(self, data):
-        if data['password1'] != data['password2']:
-            raise serializers.ValidationError(
-                {"password": "Passwords do not match."})
+        if data["password1"] != data["password2"]:
+            raise serializers.ValidationError({"password": "Passwords do not match."})
         return data
 
     def create(self, validated_data):
         user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password1']
+            username=validated_data["username"],
+            email=validated_data["email"],
+            password=validated_data["password1"],
         )
         return user
 
@@ -48,7 +48,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['id', 'name', 'image_url', 'quantity_type']
+        fields = ["id", "name", "image_url", "quantity_type"]
 
 
 class RecipeItemSerializer(serializers.ModelSerializer):
@@ -56,7 +56,7 @@ class RecipeItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeItem
-        fields = ['item', 'quantity']
+        fields = ["item", "quantity"]
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -64,24 +64,24 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ['id', 'title', 'description', 'recipe_items']
+        fields = ["id", "title", "description", "recipe_items"]
 
     def create(self, validated_data):
-        recipe_items_data = validated_data.pop('recipe_items')
-        user = self.context['request'].user
+        recipe_items_data = validated_data.pop("recipe_items")
+        user = self.context["request"].user
         recipe = Recipe.objects.create(user=user, **validated_data)
 
         for recipe_item_data in recipe_items_data:
-            item_data = recipe_item_data.pop('item')
+            item_data = recipe_item_data.pop("item")
             item, created = Item.objects.get_or_create(
-                name=item_data['name'],
+                name=item_data["name"],
                 defaults={
-                    'image_url': item_data.get('image_url'),
-                    'quantity_type': item_data.get('quantity_type')
-                }
+                    "image_url": item_data.get("image_url"),
+                    "quantity_type": item_data.get("quantity_type"),
+                },
             )
             RecipeItem.objects.create(
-                recipe=recipe, item=item, quantity=recipe_item_data['quantity']
+                recipe=recipe, item=item, quantity=recipe_item_data["quantity"]
             )
 
         return recipe
@@ -93,34 +93,36 @@ class MealSerializer(serializers.ModelSerializer):
     class Meta:
         model = Meal
         fields = [
-            'id',
-            'user',
-            'start_date',
-            'end_date',
-            'recipe_id',
+            "id",
+            "user",
+            "start_date",
+            "end_date",
+            "recipe_id",
         ]
 
     def validate(self, data):
-        user = self.context['request'].user
-        recipe = Recipe.objects.filter(user=user, id=data['recipe_id']).first()
-        if data['start_date'] >= data['end_date']:
+        user = self.context["request"].user
+        recipe = Recipe.objects.filter(user=user, id=data["recipe_id"]).first()
+        if data["start_date"] >= data["end_date"]:
             raise serializers.ValidationError(
-                "Start date must be earlier than end date.")
+                "Start date must be earlier than end date."
+            )
 
         if not recipe:
             raise serializers.ValidationError(
-                "The selected recipe does not belong to the user.")
+                "The selected recipe does not belong to the user."
+            )
 
         return data
 
     def create(self, validated_data):
-        user = self.context['request'].user
-        recipe = Recipe.objects.filter(id=validated_data['recipe_id']).first()
+        user = self.context["request"].user
+        recipe = Recipe.objects.filter(id=validated_data["recipe_id"]).first()
         meal = Meal.objects.create(
             user=user,
             recipe=recipe,
-            start_date=validated_data['start_date'],
-            end_date=validated_data['end_date']
+            start_date=validated_data["start_date"],
+            end_date=validated_data["end_date"],
         )
         return meal
 
@@ -142,12 +144,11 @@ class FetchUserRecipeItemsSerializer(serializers.Serializer):
 
     def validate_end_date(self, value):
         if value <= now():
-            raise serializers.ValidationError(
-                "End date must be in the future.")
+            raise serializers.ValidationError("End date must be in the future.")
         return value
 
     def get_user_recipe_items(self):
-        user = self.context['request'].user
+        user = self.context["request"].user
         end_date = self.validated_data.get("end_date")
 
         # Filter meals belonging to the user, ending before the specified date

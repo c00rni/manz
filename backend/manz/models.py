@@ -6,9 +6,7 @@ class Recipe(models.Model):
     title = models.CharField(max_length=255, blank=False)
     description = models.TextField(blank=True, null=True)  # Optional
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="recipes"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="recipes"
     )  # Associate recipes with a user
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -19,8 +17,7 @@ class Recipe(models.Model):
 
 class Item(models.Model):
     name = models.CharField(max_length=255, verbose_name="Item Name")
-    image_url = models.URLField(
-        blank=True, verbose_name="Image URL", null=True)
+    image_url = models.URLField(blank=True, verbose_name="Image URL", null=True)
     quantity_type = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
@@ -29,14 +26,10 @@ class Item(models.Model):
 
 class RecipeItem(models.Model):
     recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name="recipe_items"
+        Recipe, on_delete=models.CASCADE, related_name="recipe_items"
     )
     item = models.ForeignKey(
-        Item,
-        on_delete=models.CASCADE,
-        related_name="recipe_items"
+        Item, on_delete=models.CASCADE, related_name="recipe_items"
     )
     quantity = models.FloatField()
 
@@ -46,14 +39,10 @@ class RecipeItem(models.Model):
 
 class Meal(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="meals"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="meals"
     )
     recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name="meals"
+        Recipe, on_delete=models.CASCADE, related_name="meals"
     )  # Associate the Meal with one Recipe
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()

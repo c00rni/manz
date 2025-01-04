@@ -15,7 +15,7 @@ class RecipeCreateView(TestCase):
             username="testuser", password="testpassword"
         )
         self.token = Token.objects.create(user=self.user)
-        self.create_recipe_url = reverse('manz:api-recipe')
+        self.create_recipe_url = reverse("manz:api-recipe")
 
         self.recipe_title = "Chocolate Cake"
         self.first_item_name = "Flour"
@@ -29,31 +29,25 @@ class RecipeCreateView(TestCase):
                     "item": {
                         "name": f"{self.first_item_name}",
                         "image_url": "http://example.com/flour.jpg",
-                        "quantity_type": f"{self.first_item_quantity_type}"
+                        "quantity_type": f"{self.first_item_quantity_type}",
                     },
-                    "quantity": self.first_item_quantity
+                    "quantity": self.first_item_quantity,
                 },
-                {
-                    "item": {
-                        "name": "Sugar",
-                        "quantity_type": "cups"
-                    },
-                    "quantity": 1
-                }
-            ]
+                {"item": {"name": "Sugar", "quantity_type": "cups"}, "quantity": 1},
+            ],
         }
 
     def test_should_create_recipe_for_an_authenticated_user(self):
         # Initialize Django's Client manually to send a token with the request
         client = Client()
         headers = {
-            'HTTP_AUTHORIZATION': f'Token {self.token.key}',
+            "HTTP_AUTHORIZATION": f"Token {self.token.key}",
         }
 
         client.post(
             self.create_recipe_url,
             data=json.dumps(self.recipe_data),
-            content_type='application/json',
+            content_type="application/json",
             **headers,
         )
 
@@ -73,11 +67,11 @@ class RecipeCreateView(TestCase):
                     "item": {
                         "name": "Flour",
                         "image_url": "http://example.com/flour.jpg",
-                        "quantity_type": "cups"
+                        "quantity_type": "cups",
                     },
-                    "quantity": 2
+                    "quantity": 2,
                 },
-            ]
+            ],
         }
         response = self.client.post(self.create_recipe_url, self.recipe_data)
         self.assertEqual(
@@ -89,7 +83,7 @@ class RecipeCreateView(TestCase):
         self.recipe_data = {
             "title": "Chocolate Cake",
             "description": "A delicious chocolate cake recipe.",
-            "recipe_items": []
+            "recipe_items": [],
         }
         response = self.client.post(self.create_recipe_url, self.recipe_data)
         self.assertEqual(
@@ -101,13 +95,13 @@ class RecipeCreateView(TestCase):
         # Initialize Django's Client manually to send a token with the request
         client = Client()
         headers = {
-            'HTTP_AUTHORIZATION': f'Token {self.token.key}',
+            "HTTP_AUTHORIZATION": f"Token {self.token.key}",
         }
 
         client.post(
             self.create_recipe_url,
             data=json.dumps(self.recipe_data),
-            content_type='application/json',
+            content_type="application/json",
             **headers,
         )
 
