@@ -1,5 +1,25 @@
 # manz
 
+## Local dev
+
+### Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+Edit the `.env.local.example` to `.env.local`.
+
+### Backend
+
+```bash
+cd backend
+python manage.py runserver
+```
+
+Edit the `.env.example` to `.env`.
+
 # Objectives
 
 ### Skeleton decription - Web application meal planner

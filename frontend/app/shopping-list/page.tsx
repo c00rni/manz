@@ -53,7 +53,6 @@ export default function ShoppingList() {
             <ul className="space-y-2">
                 {items.map((item, index) => (
                     <li key={index} className="border p-4 rounded">
-                        {"Bonjour"}
                         <p>
                             <span className="font-semibold">{item.item_name}</span> - {item.quantity} {item.quantity_type}
                         </p>
