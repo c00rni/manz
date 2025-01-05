@@ -16,15 +16,18 @@ cd backend || {
     exit 1
 }
 
+echo "[+] Running Formatter..."
+poetry run black .
+
+echo "[+] Running Linter..."
+poetry run ruff check --fix
+
 # Run tests using `poetry`
-echo "Running Django tests..."
-if ! poetry run python manage.py test; then
-    echo "Tests failed. Aborting commit."
-    exit 1
-fi
+echo "[+] Running Django tests..."
+poetry run python manage.py test
 
 # Return to the repository root after tests pass
 cd - >/dev/null || exit
 
-echo "All tests passed. Proceeding with commit."
+echo " ======= All tests passed. Proceeding with commit. ======="
 

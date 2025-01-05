@@ -22,7 +22,7 @@ python manage.py runserver
 
 Edit the `.env.example` to `.env`.
 
-# Objectives
+## Objectives
 
 ### Skeleton decription - Web application meal planner
 
