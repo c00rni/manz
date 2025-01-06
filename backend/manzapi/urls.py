@@ -16,7 +16,9 @@ Including another URLconf
 """
 
 from django.urls import path, include
+from manz import views
 
 urlpatterns = [
     path("api/", include("manz.urls")),
+    path("health/", views.health_check, name="health_check"),
 ]

@@ -32,7 +32,7 @@ export default function ScheduleMeal() {
                 } else {
                     setError('Failed to fetch recipes')
                 }
-            } catch (error) {
+            } catch {
                 setError('An error occurred while fetching recipes')
             }
         }
@@ -64,7 +64,7 @@ export default function ScheduleMeal() {
             } else {
                 setError('Failed to schedule meal')
             }
-        } catch (error) {
+        } catch {
             setError('An error occurred while scheduling the meal')
         }
     }

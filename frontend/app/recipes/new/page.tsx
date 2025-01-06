@@ -46,7 +46,7 @@ export default function NewRecipe() {
             } else {
                 setError('Failed to create recipe')
             }
-        } catch (error) {
+        } catch {
             setError('An error occurred while creating the recipe')
         }
     }

@@ -22,6 +22,28 @@ python manage.py runserver
 
 Edit the `.env.example` to `.env`.
 
+## Docker
+
+### Pre-requisite
+
+install [docker compose](https://docs.docker.com/compose/install/).
+
+### Set up
+
+Build the docker images.
+
+```
+docker compose build --build-arg SECRET_KEY=<A_RANDOM_SECRET> \
+    --build-arg DATABASE_URL='django.db.backends.sqlite3:///db.sqlite3' \
+    --build-arg NEXT_PUBLIC_API_URL=<YOUR_BACKEND_URI>
+```
+
+Launch the project containers.
+
+```
+docker compose up
+```
+
 ## Objectives
 
 ### Skeleton decription - Web application meal planner

@@ -12,6 +12,10 @@ from django.http import JsonResponse
 from .serializers import FetchUserRecipeItemsSerializer
 
 
+def health_check(request):
+    return JsonResponse({"status": "ok"}, status=200)
+
+
 class UserRegistrationView(APIView):
     """
     API View to handle user registration.

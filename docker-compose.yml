@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      - RUN_PORT=8000
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+networks:
+  app-network:
+    driver: bridge
+

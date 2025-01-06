@@ -35,7 +35,7 @@ export default function ShoppingList() {
                 } else {
                     setError('Failed to fetch shopping list')
                 }
-            } catch (error) {
+            } catch {
                 setError('An error occurred while fetching the shopping list')
             }
         };

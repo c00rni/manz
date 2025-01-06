@@ -1,0 +1,41 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
+  curl
+
+# Install Poetry and add it to the PATH
+RUN curl -sSL https://install.python-poetry.org | python3 - \
+  && export PATH="$HOME/.local/bin:$PATH" \
+  && poetry --version
+
+# Add Poetry to the PATH in all environments
+ENV PATH="/root/.local/bin:$PATH"
+
+# Declare build-time argument
+ARG SECRET_KEY
+ARG DATABASE_URL
+# Use the argument to create an environment variable
+ENV SECRET_KEY=${SECRET_KEY}
+ENV DATABASE_URL=${DATABASE_URL}
+
+# Copy the backend code
+COPY . /app/
+
+# Install dependencies
+RUN poetry install --no-interaction --no-ansi
+
+# Update the database schema
+RUN poetry run python manage.py migrate --no-input
+
+ENV RUN_PORT=8000
+
+# Clean up apt cache to reduce image size
+RUN apt-get remove --purge -y \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+CMD poetry run gunicorn manzapi.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${RUN_PORT}

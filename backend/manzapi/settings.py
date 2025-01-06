@@ -33,12 +33,18 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["*"])
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Frontend
-    "http://localhost:8000",  # Backend
-]
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS",
+    default=[
+        "http://frontend:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3000",
+    ],
+)
+
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = [
     "content-type",
@@ -74,11 +80,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-]
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Frontend
-    "http://localhost:8000",  # Development backend
 ]
 
 ROOT_URLCONF = "manzapi.urls"

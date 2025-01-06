@@ -29,7 +29,7 @@ export default function Recipes() {
                 } else {
                     setError('Failed to fetch recipes')
                 }
-            } catch (error) {
+            } catch {
                 setError('An error occurred while fetching recipes')
             }
         }

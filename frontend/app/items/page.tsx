@@ -28,7 +28,7 @@ export default function Items() {
             } else {
                 setError('Failed to fetch items')
             }
-        } catch (error) {
+        } catch {
             setError('An error occurred while fetching items')
         }
     }
@@ -37,7 +37,7 @@ export default function Items() {
         if (endDate) {
             fetchItems()
         }
-    }, [endDate])
+    }, [endDate, fetchItems])
 
     return (
         <div className="max-w-md mx-auto">
