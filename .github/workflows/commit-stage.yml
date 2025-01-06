@@ -64,3 +64,11 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+    - uses: RafikFarhad/push-to-gcr-github-action@v5-rc1
+      with:
+        registry: europe-west6-docker.pkg.dev/kipoucui/artifact-depo
+        build_args: SECRET_KEY=${{ secrets.RANDOM_SECRET }},DATABASE_URL=${{ secrets.DATABASE_URL }},NEXT_PUBLIC_API_URL=${{ secrets.BACKEND_URL }}
+        project_id: kipoucui
+        image_name: kipoucui
+        image_tag: latest,v1
