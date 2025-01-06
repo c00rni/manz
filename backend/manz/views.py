@@ -5,7 +5,11 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .serializers import RecipeSerializer, MealSerializer, UserRegistrationSerializer
+from .serializers import (
+    RecipeSerializer,
+    MealSerializer,
+    UserRegistrationSerializer
+)
 from .models import Meal, Recipe
 from django.utils.dateparse import parse_datetime
 from django.http import JsonResponse
@@ -76,7 +80,8 @@ class RecipeCreateView(APIView):
     def post(self, request):
         request.data["user"] = request.user.id
 
-        serializer = RecipeSerializer(data=request.data, context={"request": request})
+        serializer = RecipeSerializer(
+            data=request.data, context={"request": request})
 
         if serializer.is_valid():
             serializer.save()
@@ -106,7 +111,8 @@ class ScheduleMealView(APIView):
     def post(self, request):
         request.data["user"] = request.user.id
 
-        serializer = MealSerializer(data=request.data, context={"request": request})
+        serializer = MealSerializer(
+            data=request.data, context={"request": request})
 
         if serializer.is_valid():
             serializer.save()
