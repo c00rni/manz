@@ -25,7 +25,7 @@ ENV DATABASE_URL=${DATABASE_URL}
 COPY . /app/
 
 # Install dependencies
-RUN poetry install --no-interaction --no-ansi
+RUN poetry install --no-root --no-interaction --no-ansi
 
 # Update the database schema
 RUN poetry run python manage.py migrate --no-input

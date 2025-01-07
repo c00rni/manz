@@ -65,10 +65,17 @@ jobs:
       with:
         credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
-    - uses: RafikFarhad/push-to-gcr-github-action@v5-rc1
-      with:
-        registry: europe-west6-docker.pkg.dev/kipoucui/artifact-depo
-        build_args: SECRET_KEY=${{ secrets.RANDOM_SECRET }},DATABASE_URL=${{ secrets.DATABASE_URL }},NEXT_PUBLIC_API_URL=${{ secrets.BACKEND_URL }}
-        project_id: kipoucui
-        image_name: kipoucui
-        image_tag: latest,v1
+    - name: Configure Docker to use Artifact Registry
+      run: gcloud auth configure-docker europe-west6-docker.pkg.dev --quiet
+
+    - name: Build and Push Backend Docker Image
+      run: |
+        cd backend
+        docker build -t europe-west6-docker.pkg.dev/kipoucui/artifact-depo/backend/kipoucui --build-arg SECRET_KEY=${{ secrets.RANDOM_SECRET }} --build-arg DATABASE_URL=${{ vars.DATABASE_URL }} -f Dockerfile.backend .
+        docker push europe-west6-docker.pkg.dev/kipoucui/artifact-depo/backend/kipoucui:latest
+
+    - name: Build and Push Frontend Docker Image
+      run: |
+        cd frontend
+        docker build -t europe-west6-docker.pkg.dev/kipoucui/artifact-depo/frontend/kipoucui --build-arg NEXT_PUBLIC_API_URL=${{ vars.BACKEND_URL }} -f Dockerfile.frontend .
+        docker push europe-west6-docker.pkg.dev/kipoucui/artifact-depo/frontend/kipoucui:latest
