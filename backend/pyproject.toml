@@ -20,6 +20,7 @@ ruff = "^0.8.6"
 bandit = "^1.8.0"
 uvicorn = "^0.34.0"
 uvicorn-worker = "^0.3.0"
+behave = "^1.2.6"
 
 
 [build-system]
