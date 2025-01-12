@@ -6,6 +6,7 @@ import { Inter } from 'next/font/google'
 //import { useState, useEffect } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
+import { Toaster } from "@/components/ui/toaster"
 
 export default function RootLayout({
     children,
@@ -17,6 +18,7 @@ export default function RootLayout({
         <html lang="en">
             <body className={inter.className}>
                 {children}
+                <Toaster />
             </body>
         </html>
     )

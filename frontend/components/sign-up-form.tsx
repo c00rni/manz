@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,18 +12,46 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
+import { SignUp } from "@/lib/utils"
 
 export default function SignUpForm() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [username, setUsername] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
-    const router = useRouter()
+    const { toast } = useToast()
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        // Here you would typically handle the sign-up process
-        // For this example, we'll just redirect to the planner page
-        router.push("/planner")
+        if (password == confirmPassword) {
+            try {
+                const response = await SignUp(username, email, password, confirmPassword)
+                if (response.status == 201) {
+                    toast({
+                        title: "Account Created",
+                        description: "You have successfully signed up!",
+                    });
+                }
+                else {
+                    const errorData = await response.json();
+                    toast({
+                        variant: "destructive",
+                        title: "Sign-up Failed",
+                        description: errorData.message || "An error occurred during sign-up.",
+                    });
+                }
+            } catch (error) {
+                console.log("Network Error:", error)
+            }
+        }
+        else {
+            toast({
+                variant: "destructive",
+                title: "Incorrect password",
+                description: "Your password confirmation do not match with your passoword.",
+            })
+        }
     }
 
     return (
@@ -39,6 +66,17 @@ export default function SignUpForm() {
                 <CardContent>
                     <form onSubmit={handleSubmit}>
                         <div className="grid gap-6">
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">Username</Label>
+                                <Input
+                                    id="username"
+                                    type="username"
+                                    placeholder=""
+                                    required
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                />
+                            </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="email">Email</Label>
                                 <Input

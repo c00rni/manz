@@ -14,13 +14,6 @@ RUN curl -sSL https://install.python-poetry.org | python3 - \
 # Add Poetry to the PATH in all environments
 ENV PATH="/root/.local/bin:$PATH"
 
-# Declare build-time argument
-ARG SECRET_KEY
-ARG DATABASE_URL
-# Use the argument to create an environment variable
-ENV SECRET_KEY=${SECRET_KEY}
-ENV DATABASE_URL=${DATABASE_URL}
-
 # Copy the backend code
 COPY . /app/
 
@@ -38,4 +31,6 @@ RUN apt-get remove --purge -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-CMD poetry run gunicorn manzapi.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${RUN_PORT}
+#CMD poetry run gunicorn manzapi.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${RUN_PORT}
+#CMD ["poetry", "run", "gunicorn", "manzapi.asgi:application", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:${RUN_PORT}"]
+CMD ["sh", "-c", "poetry run gunicorn manzapi.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${RUN_PORT}"]
