@@ -14,18 +14,34 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ChromeIcon as Google } from 'lucide-react'
+import { useToast } from "@/hooks/use-toast"
+import { AuthentificationWithPassword } from "@/lib/utils"
 
 export default function LoginForm() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const router = useRouter()
+    const { toast } = useToast()
 
-    const handleSubmit = (e: React.FormEvent) => {
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        // Here you would typically validate the credentials
-        // For Google authentication, you would handle the OAuth flow
-        // For this example, we'll just redirect to the planner page
-        router.push("/planner")
+        try {
+            const response = await AuthentificationWithPassword(email, password)
+            if (response.status == 200) {
+                router.push("/planner")
+            }
+            else {
+                const errorData = await response.json();
+                toast({
+                    variant: "destructive",
+                    title: "Failed to Authenticate",
+                    description: errorData.message || "Your email or password is incorrect.",
+                });
+            }
+        } catch (error) {
+            console.log("Network Error:", error)
+        }
     }
 
     return (

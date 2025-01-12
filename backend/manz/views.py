@@ -76,8 +76,7 @@ class RecipeCreateView(APIView):
     def post(self, request):
         request.data["user"] = request.user.id
 
-        serializer = RecipeSerializer(
-            data=request.data, context={"request": request})
+        serializer = RecipeSerializer(data=request.data, context={"request": request})
 
         if serializer.is_valid():
             serializer.save()
@@ -107,8 +106,7 @@ class ScheduleMealView(APIView):
     def post(self, request):
         request.data["user"] = request.user.id
 
-        serializer = MealSerializer(
-            data=request.data, context={"request": request})
+        serializer = MealSerializer(data=request.data, context={"request": request})
 
         if serializer.is_valid():
             serializer.save()
