@@ -87,3 +87,23 @@ export async function CreateRecipe(
         throw new Error("Failed to make the request. Please try again later.");
     }
 }
+
+export async function GetRecipes(): Promise<Response> {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+        throw new Error("API URL is not defined in the environment variables.");
+    }
+
+    try {
+        return fetch(
+            `${apiUrl}/api/recipe/`, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `token ${localStorage.getItem("token")}`,
+            },
+        })
+    } catch (error) {
+        throw new Error("Failed to make the request. Please try again later.");
+    }
+
+}

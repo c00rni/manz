@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -8,11 +8,9 @@ import { PlusCircle } from 'lucide-react'
 import RecipeCard from './RecipeCard'
 import CreateRecipeDialog from './CreateRecipeDialog'
 import { Recipe } from "@/lib/types"
-import { CreateRecipe } from "@/lib/utils"
+import { CreateRecipe, GetRecipes } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
-
-// Updated mock data for recipes
 
 export default function RecipeList() {
     const [searchTerm, setSearchTerm] = useState('')
@@ -20,6 +18,13 @@ export default function RecipeList() {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const { toast } = useToast()
 
+    useEffect(() => {
+        (async () => {
+            const response = await GetRecipes()
+            const recipes = await response.json()
+            setRecipes(recipes)
+        })()
+    }, [])
 
     const filteredRecipes = recipes.filter(recipe =>
         recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
