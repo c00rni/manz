@@ -29,6 +29,8 @@ export default function LoginForm() {
         try {
             const response = await AuthentificationWithPassword(email, password)
             if (response.status == 200) {
+                const reponseData = await response.json()
+                localStorage.setItem("token", reponseData.token)
                 router.push("/planner")
             }
             else {

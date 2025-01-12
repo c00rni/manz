@@ -21,71 +21,77 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-
-interface Ingredient {
-    name: string;
-    quantity: string;
-    unit: string;
-}
-
+import { Recipe, RecipeItem, Ingredient } from "@/lib/types"
 interface CreateRecipeDialogProps {
     isOpen: boolean
     onClose: () => void
-    onCreateRecipe: (recipe: { name: string; description: string; ingredients: Ingredient[]; steps: string[] }) => void
+    onCreateRecipe: (recipe: Recipe) => void
 }
 
 const unitOptions = ["unit", "grams", "cup", "teaspoon", "tablespoon"]
 
 export default function CreateRecipeDialog({ isOpen, onClose, onCreateRecipe }: CreateRecipeDialogProps) {
-    const [name, setName] = useState('')
+    const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
-    const [ingredients, setIngredients] = useState<Ingredient[]>([{ name: '', quantity: '', unit: 'unit' }])
-    const [steps, setSteps] = useState<string[]>([''])
+    const [ingredients, setIngredients] = useState<RecipeItem[]>([
+        {
+            item: {
+                name: '',
+                quantity_type: 'unit'
+            },
+            quantity: 0
+        }
+    ])
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         onCreateRecipe({
-            name,
+            title,
             description,
-            ingredients: ingredients.filter(ing => ing.name && ing.quantity),
-            steps: steps.filter(Boolean)
+            recipe_items: ingredients
         })
         resetForm()
     }
 
     const resetForm = () => {
-        setName('')
+        setTitle('')
         setDescription('')
-        setIngredients([{ name: '', quantity: '', unit: 'unit' }])
-        setSteps([''])
+        setIngredients([
+            {
+                item: {
+                    name: '',
+                    quantity_type: 'unit'
+                },
+                quantity: 0
+            }
+        ])
     }
 
     const addIngredient = () => {
-        setIngredients([...ingredients, { name: '', quantity: '', unit: 'unit' }])
+        setIngredients([...ingredients, {
+            item: {
+                name: '',
+                quantity_type: 'unit'
+            },
+            quantity: 0
+        }])
     }
 
     const removeIngredient = (index: number) => {
         setIngredients(ingredients.filter((_, i) => i !== index))
     }
 
-    const updateIngredient = (index: number, field: keyof Ingredient, value: string) => {
+    const updateIngredient = (index: number, field: keyof Ingredient | "quantity", value: string | number) => {
         const newIngredients = [...ingredients]
-        newIngredients[index] = { ...newIngredients[index], [field]: value }
+        if (field === "quantity") {
+            newIngredients[index].quantity = Number(value)
+        } else {
+            newIngredients[index].item = {
+                ...newIngredients[index].item,
+                [field]: value
+            }
+        }
         setIngredients(newIngredients)
-    }
-
-    const addStep = () => {
-        setSteps([...steps, ''])
-    }
-
-    const removeStep = (index: number) => {
-        setSteps(steps.filter((_, i) => i !== index))
-    }
-
-    const updateStep = (index: number, value: string) => {
-        const newSteps = [...steps]
-        newSteps[index] = value
-        setSteps(newSteps)
     }
 
     return (
@@ -103,8 +109,8 @@ export default function CreateRecipeDialog({ isOpen, onClose, onCreateRecipe }: 
                             <Label htmlFor="name">Recipe Name</Label>
                             <Input
                                 id="name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
                                 required
                             />
                         </div>
@@ -122,7 +128,7 @@ export default function CreateRecipeDialog({ isOpen, onClose, onCreateRecipe }: 
                             {ingredients.map((ingredient, index) => (
                                 <div key={index} className="flex items-center gap-2">
                                     <Input
-                                        value={ingredient.name}
+                                        value={ingredient.item.name}
                                         onChange={(e) => updateIngredient(index, 'name', e.target.value)}
                                         placeholder="Ingredient name"
                                         className="flex-grow"
@@ -135,8 +141,8 @@ export default function CreateRecipeDialog({ isOpen, onClose, onCreateRecipe }: 
                                         className="w-20"
                                     />
                                     <Select
-                                        value={ingredient.unit}
-                                        onValueChange={(value) => updateIngredient(index, 'unit', value)}
+                                        value={ingredient.item.quantity_type}
+                                        onValueChange={(value) => updateIngredient(index, 'quantity_type', value)}
                                     >
                                         <SelectTrigger className="w-[110px]">
                                             <SelectValue placeholder="Unit" />
@@ -162,30 +168,6 @@ export default function CreateRecipeDialog({ isOpen, onClose, onCreateRecipe }: 
                             <Button type="button" variant="outline" onClick={addIngredient}>
                                 <PlusCircle className="h-4 w-4 mr-2" />
                                 Add Ingredient
-                            </Button>
-                        </div>
-                        <div className="grid gap-2">
-                            <Label>Steps</Label>
-                            {steps.map((step, index) => (
-                                <div key={index} className="flex items-center gap-2">
-                                    <Textarea
-                                        value={step}
-                                        onChange={(e) => updateStep(index, e.target.value)}
-                                        placeholder={`Step ${index + 1}`}
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => removeStep(index)}
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            ))}
-                            <Button type="button" variant="outline" onClick={addStep}>
-                                <PlusCircle className="h-4 w-4 mr-2" />
-                                Add Step
                             </Button>
                         </div>
                     </div>

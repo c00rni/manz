@@ -1,9 +1,11 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { Recipe } from "@/lib/types";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
+
 
 export async function SignUp(
     username: string,
@@ -16,7 +18,6 @@ export async function SignUp(
     if (!apiUrl) {
         throw new Error("API URL is not defined in the environment variables.");
     }
-    console.log("API URL:", `${apiUrl}/api/register/`);
 
     try {
         return fetch(
@@ -45,7 +46,6 @@ export async function AuthentificationWithPassword(
     if (!apiUrl) {
         throw new Error("API URL is not defined in the environment variables.");
     }
-    console.log("API URL:", `${apiUrl}/api/register/`);
 
     try {
         return fetch(
@@ -64,3 +64,26 @@ export async function AuthentificationWithPassword(
     }
 }
 
+
+export async function CreateRecipe(
+    recipe: Recipe
+): Promise<Response> {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+        throw new Error("API URL is not defined in the environment variables.");
+    }
+
+    try {
+        return fetch(
+            `${apiUrl}/api/recipe/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `token ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify(recipe),
+        })
+    } catch (error) {
+        throw new Error("Failed to make the request. Please try again later.");
+    }
+}
