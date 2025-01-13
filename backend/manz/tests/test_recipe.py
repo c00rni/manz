@@ -11,11 +11,24 @@ from unittest import skip
 class RecipeCreateView(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.john_user = User.objects.create_user(
             username="testuser", password="testpassword"
         )
-        self.token = Token.objects.create(user=self.user)
+        self.john_token = Token.objects.create(user=self.john_user)
         self.create_recipe_url = reverse("manz:api-recipe")
+
+        self.alice_user = User.objects.create_user(
+            username="alice", password="testpassword"
+        )
+        self.alice_token = Token.objects.create(user=self.alice_user)
+        self.alice_headers = {
+            "HTTP_AUTHORIZATION": f"Token {self.alice_token.key}",
+        }
+
+        self.client = Client()
+        self.john_headers = {
+            "HTTP_AUTHORIZATION": f"Token {self.john_token.key}",
+        }
 
         self.recipe_title = "Chocolate Cake"
         self.first_item_name = "Flour"
@@ -36,12 +49,16 @@ class RecipeCreateView(TestCase):
                 {"item": {"name": "Sugar", "quantity_type": "cups"}, "quantity": 1},
             ],
         }
+        self.selected_recipe_id = 1
+        self.selected_recipe_url = reverse("manz:api-selected-recipe", args=[
+            self.selected_recipe_id
+        ])
 
     def test_should_create_recipe_for_an_authenticated_user(self):
         # Initialize Django's Client manually to send a token with the request
         client = Client()
         headers = {
-            "HTTP_AUTHORIZATION": f"Token {self.token.key}",
+            "HTTP_AUTHORIZATION": f"Token {self.john_token.key}",
         }
 
         client.post(
@@ -95,7 +112,7 @@ class RecipeCreateView(TestCase):
         # Initialize Django's Client manually to send a token with the request
         client = Client()
         headers = {
-            "HTTP_AUTHORIZATION": f"Token {self.token.key}",
+            "HTTP_AUTHORIZATION": f"Token {self.john_token.key}",
         }
 
         client.post(
@@ -111,3 +128,44 @@ class RecipeCreateView(TestCase):
     @skip("Not implemented")
     def test_should_find_the_quantity_of_a_item_associate_to_a_reciepe(self):
         self.assertIsNotNone(None)
+
+    def _create_chocolate_recipe_for_john(self):
+        flour_item = Item.objects.create(
+            name="Flour",
+            image_url="http://example.com/flour.jpg",
+            quantity_type="cups"
+        )
+        sugar_item = Item.objects.create(
+            name="Sugar",
+            quantity_type="cups"
+        )
+
+        # Create a recipe
+        recipe = Recipe.objects.create(
+            user=self.john_user,
+            title="Chocolate Cake",
+            description="A delicious chocolate cake recipe."
+        )
+        recipe.recipe_items.create(item=flour_item, quantity=2)
+        recipe.recipe_items.create(item=sugar_item, quantity=1)
+
+    def test_should_delelte_john_recipe(self):
+        self._create_chocolate_recipe_for_john()
+
+        john_recipe = Recipe.objects.filter(user=self.john_user).first()
+        self.selected_recipe_id = john_recipe.id
+        response = self.client.delete(
+            self.selected_recipe_url,
+            **self.john_headers
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_should_not_allow_to_delete_others_recipe(self):
+        self._create_chocolate_recipe_for_john()
+        john_recipe = Recipe.objects.filter(user=self.john_user).first()
+        self.selected_recipe_id = john_recipe.id
+        response = self.client.delete(
+            self.selected_recipe_url,
+            **self.alice_headers
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

@@ -76,7 +76,8 @@ class RecipeCreateView(APIView):
     def post(self, request):
         request.data["user"] = request.user.id
 
-        serializer = RecipeSerializer(data=request.data, context={"request": request})
+        serializer = RecipeSerializer(
+            data=request.data, context={"request": request})
 
         if serializer.is_valid():
             serializer.save()
@@ -95,6 +96,32 @@ class RecipeCreateView(APIView):
         return Response(serializer.data)
 
 
+class RecipeView(APIView):
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, recipe_id):
+        recipe = Recipe.objects.filter(
+            user=request.user,
+            id=recipe_id,
+        ).first()
+
+        if not recipe:
+            return Response(
+                {
+                    "error": "Recipe not found or you do not have permission to delete it."
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        recipe.delete()
+        return Response(
+            {"message": "Recipe deleted successfully."},
+            status=status.HTTP_200_OK
+        )
+
+
 class ScheduleMealView(APIView):
     """
     API View to schedule meals.
@@ -106,7 +133,8 @@ class ScheduleMealView(APIView):
     def post(self, request):
         request.data["user"] = request.user.id
 
-        serializer = MealSerializer(data=request.data, context={"request": request})
+        serializer = MealSerializer(
+            data=request.data, context={"request": request})
 
         if serializer.is_valid():
             serializer.save()

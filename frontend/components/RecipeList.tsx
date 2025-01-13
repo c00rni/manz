@@ -8,7 +8,7 @@ import { PlusCircle } from 'lucide-react'
 import RecipeCard from './RecipeCard'
 import CreateRecipeDialog from './CreateRecipeDialog'
 import { Recipe } from "@/lib/types"
-import { CreateRecipe, GetRecipes } from "@/lib/utils"
+import { CreateRecipe, GetRecipes, DeleteRecipe } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
 
@@ -18,12 +18,30 @@ export default function RecipeList() {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const { toast } = useToast()
 
-    useEffect(() => {
-        (async () => {
+    const fetchRecipes = async () => {
+        try {
             const response = await GetRecipes()
             const recipes = await response.json()
+
+            if (response.status !== 200) {
+                toast({
+                    title: "Error",
+                    description: "An unexpected error occurred. Please try again later.",
+                })
+                return
+            }
+
             setRecipes(recipes)
-        })()
+        } catch {
+            toast({
+                title: "Error",
+                description: "An unexpected error occurred. Please try again later.",
+            })
+        }
+    }
+
+    useEffect(() => {
+        fetchRecipes()
     }, [])
 
     const filteredRecipes = recipes.filter(recipe =>
@@ -39,7 +57,7 @@ export default function RecipeList() {
         try {
             const response = await CreateRecipe(newRecipe)
             if (response.status == 201) {
-                setRecipes([...recipes, recipeWithId])
+                fetchRecipes()
                 setIsDialogOpen(false)
                 toast({
                     title: "Recipe created.",
@@ -58,6 +76,34 @@ export default function RecipeList() {
                 description: "An unexpected error occurred. Please try again later.",
             })
         }
+    }
+
+    const handleDeleteRecipe = (id: number) => {
+        const deletedRecipe = recipes.find(recipe => recipe.id === id)
+        if (!deletedRecipe) return
+
+        setRecipes(recipes.filter(recipe => recipe.id !== id))
+
+        DeleteRecipe(id)
+            .then(response => {
+                if (response.ok) {
+                    toast({
+                        title: "Recipe deleted",
+                        description: `${deletedRecipe.title} has been removed.`,
+                        action: (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleCreateRecipe(deletedRecipe)}
+                            >
+                                Undo
+                            </Button>
+                        ),
+                    });
+                } else {
+                    throw new Error("Failed to delete the recipe.");
+                }
+            })
     }
 
     return (
@@ -83,6 +129,7 @@ export default function RecipeList() {
                             <RecipeCard
                                 key={recipe.id}
                                 recipe={recipe}
+                                onDelete={() => handleDeleteRecipe(recipe.id)}
                             />
                         ))}
                     </div>

@@ -6,6 +6,9 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
 }
 
+export interface ErrorResponse {
+    message: string;
+}
 
 export async function SignUp(
     username: string,
@@ -106,4 +109,39 @@ export async function GetRecipes(): Promise<Response> {
         throw new Error("Failed to make the request. Please try again later.");
     }
 
+}
+
+export async function DeleteRecipe(id: number): Promise<Response> {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+        throw new Error("API URL is not defined in the environment variables.");
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+        throw new Error("User is not authenticated. Token is missing.");
+    }
+
+    try {
+        const response = await fetch(`${apiUrl}/api/recipe/${id}/`, { // Add trailing slash
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Token ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to delete the recipe. Status: ${response.status}`);
+        }
+
+        return response;
+    } catch (error) {
+        if (error instanceof Error) {
+            throw new Error(`Failed to make the request. Please try again later. ${error.message}`);
+        } else {
+            throw new Error("An unknown error occurred.");
+        }
+    }
 }
