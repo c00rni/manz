@@ -12,7 +12,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { Bell, User, LogOut, PlusCircle } from 'lucide-react'
+import { Bell, User, LogOut, PlusCircle, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function PlannerPage() {
@@ -21,6 +21,7 @@ export default function PlannerPage() {
 
     const handleLogout = () => {
         // In a real application, you would implement proper logout logic here
+        localStorage.setItem("token", "")
         router.push('/')
     }
 
@@ -34,6 +35,14 @@ export default function PlannerPage() {
             <header className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Meal Planner</h1>
                 <div className="flex items-center space-x-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push('/grocery-list')}
+                    >
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Shopping List
+                    </Button>
                     <Button variant="ghost" size="icon">
                         <Bell className="h-5 w-5" />
                     </Button>
