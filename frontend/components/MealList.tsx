@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
 interface Meal {
-    name: string;
+    recipe_title: string;
     guests: number;
 }
 
@@ -27,7 +27,7 @@ export default function MealList({ meals, onEditMeal }: MealListProps) {
                 >
                     <Card className="flex-shrink-0">
                         <CardContent className="p-3">
-                            <p className="text-sm font-medium">{meal.name}</p>
+                            <p className="text-sm font-medium">{meal.recipe_title}</p>
                             <p className="text-xs text-gray-500">Guests: {meal.guests}</p>
                         </CardContent>
                     </Card>

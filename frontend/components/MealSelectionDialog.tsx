@@ -25,29 +25,51 @@ import {
     PaginationNext,
     PaginationPrevious
 } from "@/components/ui/pagination"
+import { Recipe } from "@/lib/types"
+import { GetRecipes, CreateMeal } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 interface MealSelectionDialogProps {
     isOpen: boolean
     onClose: () => void
     onSelectMeal: (meal: string, guests: number) => void
-    date: string
+    date: Date | null
     editingMeal: { name: string; guests: number } | null
 }
-
-// Mock data for recipes
-const mockRecipes = [
-    "Spaghetti Carbonara", "Chicken Stir Fry", "Vegetable Curry", "Beef Tacos",
-    "Grilled Salmon", "Mushroom Risotto", "Caesar Salad", "Margherita Pizza",
-    "Beef Burger", "Vegetable Lasagna", "Chicken Parmesan", "Shrimp Scampi",
-    "Beef Stroganoff", "Vegetable Soup", "Chicken Alfredo", "Tuna Salad",
-    "Beef Stew", "Eggplant Parmesan", "Chicken Fajitas", "Tomato Basil Pasta"
-]
 
 export default function MealSelectionDialog({ isOpen, onClose, onSelectMeal, date, editingMeal }: MealSelectionDialogProps) {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
+    const [recipes, setRecipes] = useState<Recipe[]>([])
     const [guests, setGuests] = useState(1)
+    const { toast } = useToast()
     const recipesPerPage = 10
+
+    const fetchRecipes = async (query: string = "") => {
+        try {
+            const response = await GetRecipes(query)
+            const recipes = await response.json()
+
+            if (response.status !== 200) {
+                toast({
+                    title: "Error",
+                    description: "An unexpected error occurred. Please try again later.",
+                })
+                return
+            }
+
+            setRecipes(recipes)
+        } catch {
+            toast({
+                title: "Error",
+                description: "An unexpected error occurred. Please try again later.",
+            })
+        }
+    }
+
+    useEffect(() => {
+        fetchRecipes()
+    }, [])
 
     useEffect(() => {
         if (editingMeal) {
@@ -60,8 +82,8 @@ export default function MealSelectionDialog({ isOpen, onClose, onSelectMeal, dat
         setCurrentPage(1)
     }, [editingMeal, isOpen])
 
-    const filteredRecipes = mockRecipes.filter(recipe =>
-        recipe.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredRecipes = recipes.filter(recipe =>
+        recipe.title.toLowerCase().includes(searchTerm?.toLowerCase() || '')
     )
 
     const indexOfLastRecipe = currentPage * recipesPerPage
@@ -74,23 +96,53 @@ export default function MealSelectionDialog({ isOpen, onClose, onSelectMeal, dat
         setCurrentPage(page)
     }
 
-    const handleSelectMeal = (meal: string) => {
-        onSelectMeal(meal, guests)
+    const handleSelectMeal = async (recipe: Recipe) => {
+        if (date) {
+            const response = await CreateMeal(recipe.id, date)
+            if (!response.ok) {
+                const errorData = await response.json();
+                toast({
+                    variant: "destructive",
+                    title: "Failed to create a Meal",
+                    description: errorData.message || "An error occurred during the meal creation process, please try later.",
+                });
+            }
+        }
         onClose()
+    }
+
+    const searchForRecipe = async (userInput: string) => {
+        setCurrentPage(1)
+        try {
+            const response = await GetRecipes(userInput);
+
+            if (response.ok) {
+                const data = await response.json();
+                setRecipes(data);
+            } else {
+                console.error("Failed to fetch recipes:", response.statusText);
+            }
+        } catch (error) {
+            console.error("An error occurred while searching for recipes:", error);
+        }
+    }
+
+    const formatDate = (date: Date) => {
+        return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
     }
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>{editingMeal ? 'Edit' : 'Select'} a Meal for {date}</DialogTitle>
+                    <DialogTitle>{editingMeal ? 'Edit' : 'Select'} a Meal for {date ? formatDate(date) : ''}</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="guests" className="text-right">
                             Guests
                         </Label>
-                        <Select value={guests.toString()} onValueChange={(value) => setGuests(parseInt(value))}>
+                        <Select value={(guests || "").toString()} onValueChange={(value) => setGuests(parseInt(value))}>
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="Select number of guests" />
                             </SelectTrigger>
@@ -111,6 +163,7 @@ export default function MealSelectionDialog({ isOpen, onClose, onSelectMeal, dat
                             onChange={(e) => {
                                 setSearchTerm(e.target.value)
                                 setCurrentPage(1)
+                                searchForRecipe(e.target.value)
                             }}
                             placeholder="Type to search..."
                         />
@@ -122,7 +175,7 @@ export default function MealSelectionDialog({ isOpen, onClose, onSelectMeal, dat
                                 variant="outline"
                                 onClick={() => handleSelectMeal(recipe)}
                             >
-                                {recipe}
+                                {recipe.title}
                             </Button>
                         ))}
                     </div>

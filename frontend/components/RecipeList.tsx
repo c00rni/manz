@@ -18,9 +18,9 @@ export default function RecipeList() {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const { toast } = useToast()
 
-    const fetchRecipes = async () => {
+    const fetchRecipes = async (query: string = "") => {
         try {
-            const response = await GetRecipes()
+            const response = await GetRecipes(query)
             const recipes = await response.json()
 
             if (response.status !== 200) {

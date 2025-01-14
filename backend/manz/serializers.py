@@ -33,7 +33,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data["password1"] != data["password2"]:
-            raise serializers.ValidationError({"password": "Passwords do not match."})
+            raise serializers.ValidationError(
+                {"password": "Passwords do not match."})
         return data
 
     def create(self, validated_data):
@@ -89,6 +90,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class MealSerializer(serializers.ModelSerializer):
     recipe_id = serializers.IntegerField(write_only=True)
+    recipe_title = serializers.CharField(source="recipe.title", read_only=True)
 
     class Meta:
         model = Meal
@@ -98,6 +100,7 @@ class MealSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "recipe_id",
+            "recipe_title",
         ]
 
     def validate(self, data):
@@ -144,7 +147,8 @@ class FetchUserRecipeItemsSerializer(serializers.Serializer):
 
     def validate_end_date(self, value):
         if value <= now():
-            raise serializers.ValidationError("End date must be in the future.")
+            raise serializers.ValidationError(
+                "End date must be in the future.")
         return value
 
     def get_user_recipe_items(self):

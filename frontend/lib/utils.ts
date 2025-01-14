@@ -91,15 +91,20 @@ export async function CreateRecipe(
     }
 }
 
-export async function GetRecipes(): Promise<Response> {
+export async function GetRecipes(search: string = ""): Promise<Response> {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!apiUrl) {
         throw new Error("API URL is not defined in the environment variables.");
     }
 
+    let searchParameter = ""
+    if (search != "") {
+        searchParameter = `?query=${search}`
+    }
+
     try {
         return fetch(
-            `${apiUrl}/api/recipe/`, {
+            `${apiUrl}/api/recipe/${searchParameter}`, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `token ${localStorage.getItem("token")}`,
@@ -109,6 +114,30 @@ export async function GetRecipes(): Promise<Response> {
         throw new Error("Failed to make the request. Please try again later.");
     }
 
+}
+
+export async function GetMeals(startDate: Date, endDate: Date): Promise<Response> {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+        throw new Error("API URL is not defined in the environment variables.");
+    }
+
+    try {
+        const url = `${apiUrl}/api/schedule/?start_date=${encodeURIComponent(
+            startDate.toISOString()
+        )}&end_date=${encodeURIComponent(endDate.toISOString())}`;
+
+        return await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Token ${localStorage.getItem("token")}`,
+            },
+        });
+    } catch (error) {
+        console.error("Failed to fetch meals:", error);
+        throw new Error("Failed to make the request. Please try again later.");
+    }
 }
 
 export async function DeleteRecipe(id: number): Promise<Response> {
@@ -143,5 +172,33 @@ export async function DeleteRecipe(id: number): Promise<Response> {
         } else {
             throw new Error("An unknown error occurred.");
         }
+    }
+}
+
+export async function CreateMeal(recipe_id: number, start_date: Date): Promise<Response> {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+        throw new Error("API URL is not defined in the environment variables.");
+    }
+
+    // Add one hour to the start_date to calculate the end_date
+    const end_date = new Date(start_date.getTime() + 60 * 60 * 1000);
+
+    try {
+        return fetch(
+            `${apiUrl}/api/schedule/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `token ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({
+                recipe_id: recipe_id,
+                start_date: start_date.toISOString(),
+                end_date: end_date.toISOString(),
+            }),
+        })
+    } catch (error) {
+        throw new Error("Failed to make the request. Please try again later.");
     }
 }

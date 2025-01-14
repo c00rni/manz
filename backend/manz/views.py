@@ -85,11 +85,18 @@ class RecipeCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        request.data["user"] = request.user.id
+        query = request.query_params.get("query")
 
-        recipes = Recipe.objects.filter(
-            user=request.user,
-        )
+        if query:
+            query = query.strip()
+            recipes = Recipe.objects.filter(
+                user=request.user,
+                title__icontains=query
+            )
+        else:
+            recipes = Recipe.objects.filter(
+                user=request.user,
+            )
 
         serializer = RecipeSerializer(recipes, many=True)
 
@@ -112,13 +119,12 @@ class RecipeView(APIView):
                 {
                     "error": "Recipe not found or you do not have permission to delete it."
                 },
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         recipe.delete()
         return Response(
-            {"message": "Recipe deleted successfully."},
-            status=status.HTTP_200_OK
+            {"message": "Recipe deleted successfully."}, status=status.HTTP_200_OK
         )
 
 
