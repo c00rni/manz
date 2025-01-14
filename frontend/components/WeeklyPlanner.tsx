@@ -72,7 +72,6 @@ export default function WeeklyPlanner() {
                         guests: meal.guests,
                     });
                 });
-                console.log(data)
                 setMeals(loadedMeals);
             } else {
                 console.error("Failed to fetch meals:", response.statusText);

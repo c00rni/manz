@@ -15,3 +15,11 @@ export interface Recipe {
     description: string;
     recipe_items: RecipeItem[];
 }
+
+export interface Item {
+    recipe_title: string
+    item_name: string
+    quantity: number
+    quantity_type: string
+}
+

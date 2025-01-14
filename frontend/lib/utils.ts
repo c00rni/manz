@@ -202,3 +202,29 @@ export async function CreateMeal(recipe_id: number, start_date: Date): Promise<R
         throw new Error("Failed to make the request. Please try again later.");
     }
 }
+
+export async function GetItems(endDate: Date): Promise<Response> {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+        throw new Error("API URL is not defined in the environment variables.");
+    }
+
+    try {
+        const formattedEndDate = endDate.toISOString();
+
+        const url = `${apiUrl}/api/item/?end_date=${encodeURIComponent(formattedEndDate)}`;
+
+
+        return await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Token ${localStorage.getItem("token")}`,
+            },
+        });
+    } catch (error) {
+        console.error("Failed to fetch meals:", error);
+        throw new Error("Failed to make the request. Please try again later.");
+    }
+}
+
