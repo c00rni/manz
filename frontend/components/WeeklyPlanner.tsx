@@ -51,75 +51,45 @@ export default function WeeklyPlanner() {
         return date.toISOString().split('T')[0];
     };
 
-    useEffect(() => {
-        const fetchMeals = async () => {
-            const startDate = currentWeekStart;
-            const endDate = new Date(currentWeekStart);
-            endDate.setDate(startDate.getDate() + 6); // End date is 6 days after start date
+    const fetchMeals = async () => {
+        const startDate = currentWeekStart;
+        const endDate = new Date(currentWeekStart);
+        endDate.setDate(startDate.getDate() + 6); // End date is 6 days after start date
 
-            try {
-                const response = await GetMeals(startDate, endDate);
-                if (response.ok) {
-                    const data = await response.json();
-                    // Transform data into a MealPlan structure
-                    const loadedMeals: MealPlan = {};
-                    data.forEach((meal: any) => {
-                        const dateKey = meal.start_date.split('T')[0];
-                        if (!loadedMeals[dateKey]) {
-                            loadedMeals[dateKey] = [];
-                        }
-                        loadedMeals[dateKey].push({
-                            recipe_title: meal.recipe_title,
-                            guests: meal.guests,
-                        });
+        try {
+            const response = await GetMeals(startDate, endDate);
+            if (response.ok) {
+                const data = await response.json();
+                // Transform data into a MealPlan structure
+                const loadedMeals: MealPlan = {};
+                data.forEach((meal: any) => {
+                    const dateKey = meal.start_date.split('T')[0];
+                    if (!loadedMeals[dateKey]) {
+                        loadedMeals[dateKey] = [];
+                    }
+                    loadedMeals[dateKey].push({
+                        recipe_title: meal.recipe_title,
+                        guests: meal.guests,
                     });
-                    console.log(data)
-                    setMeals(loadedMeals);
-                } else {
-                    console.error("Failed to fetch meals:", response.statusText);
-                }
-            } catch (error) {
-                console.error("Error fetching meals:", error);
+                });
+                console.log(data)
+                setMeals(loadedMeals);
+            } else {
+                console.error("Failed to fetch meals:", response.statusText);
             }
-        };
+        } catch (error) {
+            console.error("Error fetching meals:", error);
+        }
+    };
 
+    useEffect(() => {
         fetchMeals();
     }, []);
 
+    // Re-fetch meals when the week changes
     useEffect(() => {
-        const fetchMeals = async () => {
-            const startDate = currentWeekStart;
-            const endDate = new Date(currentWeekStart);
-            endDate.setDate(startDate.getDate() + 6);
-
-            try {
-                const response = await GetMeals(startDate, endDate);
-                if (response.ok) {
-                    const data = await response.json();
-                    // Transform data into a MealPlan structure
-                    const loadedMeals: MealPlan = {};
-                    data.forEach((meal: any) => {
-                        const dateKey = meal.start_date.split('T')[0];
-                        if (!loadedMeals[dateKey]) {
-                            loadedMeals[dateKey] = [];
-                        }
-                        loadedMeals[dateKey].push({
-                            recipe_title: meal.recipe_title,
-                            guests: meal.guests,
-                        });
-                    });
-                    console.log(data)
-                    setMeals(loadedMeals);
-                } else {
-                    console.error("Failed to fetch meals:", response.statusText);
-                }
-            } catch (error) {
-                console.error("Error fetching meals:", error);
-            }
-        };
-
         fetchMeals();
-    }, [currentWeekStart]); // Re-fetch meals when the week changes
+    }, [currentWeekStart]);
 
     const handleAddMeal = (date: Date) => {
         setSelectedDate(date);
@@ -205,6 +175,11 @@ export default function WeeklyPlanner() {
         });
     };
 
+    const closeDialogue = () => {
+        setIsDialogOpen(false)
+        fetchMeals();
+    }
+
     return (
         <Card className="h-full flex flex-col">
             <CardHeader>
@@ -252,7 +227,7 @@ export default function WeeklyPlanner() {
             </CardContent>
             <MealSelectionDialog
                 isOpen={isDialogOpen}
-                onClose={() => setIsDialogOpen(false)}
+                onClose={() => closeDialogue()}
                 onSelectMeal={handleSelectMeal}
                 date={selectedDate}
                 editingMeal={editingMeal}

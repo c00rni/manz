@@ -33,8 +33,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data["password1"] != data["password2"]:
-            raise serializers.ValidationError(
-                {"password": "Passwords do not match."})
+            raise serializers.ValidationError({"password": "Passwords do not match."})
         return data
 
     def create(self, validated_data):
@@ -147,8 +146,7 @@ class FetchUserRecipeItemsSerializer(serializers.Serializer):
 
     def validate_end_date(self, value):
         if value <= now():
-            raise serializers.ValidationError(
-                "End date must be in the future.")
+            raise serializers.ValidationError("End date must be in the future.")
         return value
 
     def get_user_recipe_items(self):

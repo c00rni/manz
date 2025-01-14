@@ -32,12 +32,17 @@ import { useToast } from "@/hooks/use-toast"
 interface MealSelectionDialogProps {
     isOpen: boolean
     onClose: () => void
-    onSelectMeal: (meal: string, guests: number) => void
+    //onSelectMeal: (meal: string, guests: number) => void
     date: Date | null
     editingMeal: { name: string; guests: number } | null
 }
 
-export default function MealSelectionDialog({ isOpen, onClose, onSelectMeal, date, editingMeal }: MealSelectionDialogProps) {
+export default function MealSelectionDialog({
+    isOpen,
+    onClose,
+    date,
+    editingMeal
+}: MealSelectionDialogProps) {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
     const [recipes, setRecipes] = useState<Recipe[]>([])
